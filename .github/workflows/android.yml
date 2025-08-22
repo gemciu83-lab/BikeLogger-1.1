@@ -19,12 +19,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      # Jeśli nie ma wrappera gradle — wygeneruje
+      # Jednorazowo wygeneruj Gradle Wrapper, jeżeli go nie ma w repo
+      # (ta akcja jest starsza, ale tu używamy jej tylko do 'wrapper')
       - name: Generate Gradle Wrapper (if missing)
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 8.7
           arguments: wrapper
@@ -32,10 +30,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
+      # Nowa, zalecana akcja do uruchamiania Gradle + cache
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Upload APK
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: BikeLogger-debug-apk
